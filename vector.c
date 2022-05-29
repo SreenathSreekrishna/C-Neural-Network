@@ -1,5 +1,25 @@
 #include <stdlib.h>
-#include "matrix_type.c"
+#ifndef __matrix__
+#include "matrix.c"
+#endif
+#include "neuron.c"
+
+typedef struct Vector {
+    float *arr;
+    int length;
+} Vector;
+
+Vector new_vector(int length){
+    Vector vector;
+    float *vecarr = malloc((length+1)*sizeof(float));
+    for (int i = 0; i<length; i++){
+        vecarr[i] = getRand();
+    }
+    vecarr[length] = 0;
+    vector.arr = vecarr;
+    vector.length = length;
+    return vector;
+}
 
 Vector vMultiply(Vector v1, Vector v2){
     Vector product = new_vector(v1.length);
