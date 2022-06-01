@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "vector_type.c"
+#include "matrix.c"
 
 typedef struct Data {
     Vector values;
