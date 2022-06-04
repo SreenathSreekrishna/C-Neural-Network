@@ -30,6 +30,7 @@ Network create_network(Vector size){
     for (int i = 0; i<len; i++){
         nn.weightLayers[i].weights = new_matrix(nn.neuronLayers[i].neurons.length, nn.neuronLayers[i+1].neurons.length);
     }
+    nn.size = size.length;
     return nn;
 }
 
@@ -40,8 +41,18 @@ void free_network(Network *nn){
     }
     int len = nn->size-1;
     for (int i = 0; i<len; i++){
-        matrix_free(&nn->weightLayers[i].weights);
+        matrix_free(&(nn->weightLayers[i].weights));
     }
     free(nn->weightLayers);
     free(nn->neuronLayers);
+}
+
+int main(void){
+    Vector size;
+    size.length = 3;
+    float arr[] = {3.0, 2.0, 4.0};
+    size.arr = arr;
+    Network nn = create_network(size);
+    printMatrix(nn.weightLayers[0].weights);
+    free_network(&nn);
 }
