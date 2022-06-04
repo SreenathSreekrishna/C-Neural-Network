@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#define __matrix__
 #include "matrix.c"
 
 typedef struct Data {
