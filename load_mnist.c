@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef __matrix__
 #define __matrix__
 #include "matrix.c"
+#endif
 
 typedef struct Data {
     Vector values;
@@ -43,7 +45,7 @@ Data *load(void){
     return train_set;
 }
 
-int main(void){
+/*int main(void){
     Data *training = load();
     free_data(training, 60000);
-}
+}*/

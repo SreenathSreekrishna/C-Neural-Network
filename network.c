@@ -46,13 +46,3 @@ void free_network(Network *nn){
     free(nn->weightLayers);
     free(nn->neuronLayers);
 }
-
-int main(void){
-    Vector size;
-    size.length = 3;
-    float arr[] = {3.0, 2.0, 4.0};
-    size.arr = arr;
-    Network nn = create_network(size);
-    printMatrix(nn.weightLayers[0].weights);
-    free_network(&nn);
-}
