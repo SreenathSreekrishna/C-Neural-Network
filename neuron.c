@@ -1,7 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 float getRand(){
-    return (float)(rand() % 1000)/1000.0;
+    return (((float)(rand() % 1000)/1000.0)*2)-1;
 }
 
 float ReLu(float n){

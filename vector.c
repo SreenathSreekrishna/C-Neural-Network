@@ -60,3 +60,10 @@ Vector vSquare(Vector v){
     }
     return result;
 }
+
+void printVector(Vector v){
+    for (int i = 0; i<v.length; i++){
+        printf("%f ", v.arr[i]);
+    }
+    printf("\n");
+}
