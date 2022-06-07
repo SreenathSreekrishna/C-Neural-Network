@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "network.c"
 #include "load_mnist.c"
+#include <time.h>
 
 Vector compute(Vector input, Network *nn){
     //Computes output neuron activations given the input neuron activations
@@ -10,7 +11,14 @@ Vector compute(Vector input, Network *nn){
     for (int i = 0; i<nn->size-1; i++){
         for (int j = 0; j<nn->neuronLayers[i+1].neurons.length; j++){
             float result = nn->neuronLayers[i+1].biases.arr[j] + vDot(nn->neuronLayers[i].neurons, nn->weightLayers[i].weights.arr[j]);
-            nn->neuronLayers[i+1].neurons.arr[j] = ReLu(result);
+            float finalVal;
+            if (i>=nn->size-2){
+                finalVal = sig(result);
+            }
+            else {
+                finalVal = ReLu(result);
+            }
+            nn->neuronLayers[i+1].neurons.arr[j] = finalVal;
         }
     }
     return nn->neuronLayers[nn->size-1].neurons;
@@ -42,6 +50,7 @@ float loss(Data data, Network *nn, Vector labels){
 }
 
 int main(void){
+    srand(time(NULL));
     Data *training = load();
     Vector size;
     float arr[] = {784.0, 16.0, 16.0, 10.0};
@@ -52,10 +61,9 @@ int main(void){
     size.arr = arr;
     size.length = 4;
     Network nn = create_network(size);
-    for (int i = 0; i<100; i++){
-        float zeroloss = loss(training[i], &nn, labels);
-        printf("%lf\n", zeroloss);
-    }
+    float total = 0.0;
+    printf("loss: %lf\n", loss(training[0],&nn,labels));
+    printVector(nn.neuronLayers[3].neurons);
     free_data(training, 6000);
     free_network(&nn);
 }
