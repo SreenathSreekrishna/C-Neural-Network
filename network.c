@@ -28,6 +28,7 @@ Network create_network(Vector size){
     }
     int len = size.length-1;
     for (int i = 0; i<len; i++){
+        //weightlayerMatrix[a][b] will return connection between ath neuron in curr layer and bth neuron in next layer
         nn.weightLayers[i].weights = new_matrix(nn.neuronLayers[i].neurons.length, nn.neuronLayers[i+1].neurons.length);
     }
     nn.size = size.length;

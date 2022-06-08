@@ -24,28 +24,37 @@ Vector compute(Vector input, Network *nn){
     return nn->neuronLayers[nn->size-1].neurons;
 }
 
-int convertLabel(int label, Vector labels){
-    for (int i = 0; i<labels.length; i++){
-        if (labels.arr[i] == label){
-            return i;
-        }
-    }
-    return -1;
-}
-
-float loss(Data data, Network *nn, Vector labels){
-    Vector output = compute(data.values, nn);
-    Vector expected = new_vector(output.length);
+Vector convertLabel(int label, Vector labels){
+    Vector expected = new_vector(labels.length);
     for (int i = 0; i<expected.length; i++){
         expected.arr[i] = 0.0;
     }
-    expected.arr[convertLabel(data.label, labels)] = 1.0;
-    Vector diff = vSub(output, expected);
+    for (int i = 0; i<labels.length; i++){
+        if (labels.arr[i] == label){
+            expected.arr[i] = 1.0;
+        }
+    }
+    return expected;
+}
+
+Vector getDiff(Data data, Network *nn, Vector labels){
+    Vector output = compute(data.values, nn);
+    Vector expected = convertLabel(data.label, labels);
+    Vector diff = vSub(expected, output);
+    free(expected.arr);
+    return diff;
+}
+
+Vector backProp(Vector nudges, Matrix wLayer){
+    //returns nudges to prev layer in proportion to weights
+}
+
+float loss(Data data, Network *nn, Vector labels){
+    Vector diff = getDiff(data, nn, labels);
     Vector __loss = vSquare(diff);
     float _loss = sum(__loss);
     free(__loss.arr);
     free(diff.arr);
-    free(expected.arr);
     return _loss;
 }
 
