@@ -24,7 +24,7 @@ Network create_network(Vector size){
     nn.neuronLayers = malloc(sizeof(NeuronLayer)*size.length);
     for (int i = 0; i<size.length; i++){
         nn.neuronLayers[i].neurons = new_vector(size.arr[i]);
-        nn.neuronLayers[i].biases =  new_vector(size.arr[i]);
+        nn.neuronLayers[i].biases =  new_vector_zeroes(size.arr[i]);
     }
     int len = size.length-1;
     for (int i = 0; i<len; i++){

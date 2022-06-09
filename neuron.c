@@ -14,6 +14,17 @@ float ReLu(float n){
     return n;
 }
 
+float ReLuDerivative(float n){
+    if (n<0){
+        return 0;
+    }
+    return 1;
+}
+
 float sig(float n) {
     return (n / (1 + fabsf(n)));
+}
+
+float sigDerivative(float n){
+    return (n * (1 - n));
 }

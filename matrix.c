@@ -29,7 +29,15 @@ void matrix_free(Matrix *matrix){
 }
 
 Matrix new_matrix(int sizeX, int sizeY){
-    Vector *mat = malloc((sizeX+1)*sizeof(Vector));
+    /*
+    size 3,2 would give - 
+    [
+        [a,b],
+        [c,d],
+        [e,f]
+    ]
+    */
+    Vector *mat = malloc((sizeX)*sizeof(Vector));
     for (int i = 0; i<sizeX; i++){
         Vector tmp = new_vector(sizeY);
         mat[i] = tmp;
@@ -50,4 +58,24 @@ Matrix mMultiply(Matrix matrixA, Matrix matrixB) {
         }
     }
     return product;
+}
+
+Matrix mFlip(Matrix m){
+    Matrix flipped = new_matrix(m.dims[1], m.dims[0]);
+    for (int i = 0; i<m.dims[0]; i++){
+        for (int j = 0; j<m.dims[1]; j++){
+            flipped.arr[j].arr[i] = m.arr[i].arr[j];
+        }
+    }
+    return flipped;
+}
+
+Vector mSum(Matrix m){
+    Matrix flipped = mFlip(m);
+    Vector _sum = new_vector(m.dims[0]);
+    for (int i = 0; i<flipped.dims[0]; i++){
+        _sum.arr[i] = sum(flipped.arr[i]);
+    }
+    matrix_free(&flipped);
+    return _sum;
 }

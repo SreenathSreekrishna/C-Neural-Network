@@ -20,6 +20,17 @@ Vector new_vector(int length){
     vector.length = length;
     return vector;
 }
+Vector new_vector_zeroes(int length){
+    Vector vector;
+    float *vecarr = malloc((length+1)*sizeof(float));
+    for (int i = 0; i<length; i++){
+        vecarr[i] = 0.0;
+    }
+    vecarr[length] = 0;
+    vector.arr = vecarr;
+    vector.length = length;
+    return vector;
+}
 
 float sum(Vector v){
     float _sum = 0;

@@ -2,6 +2,7 @@
 #include "network.c"
 #include "load_mnist.c"
 #include <time.h>
+#define TRAINING_SPEED 0.01
 
 Vector compute(Vector input, Network *nn){
     //Computes output neuron activations given the input neuron activations
@@ -45,8 +46,9 @@ Vector getDiff(Data data, Network *nn, Vector labels){
     return diff;
 }
 
-Vector backProp(Vector nudges, Matrix wLayer){
-    //returns nudges to prev layer in proportion to weights
+Vector backProp(Vector nudges, Matrix *wLayer){
+    //returns nudges to weights in proportion to prev layer
+    //todo
 }
 
 float loss(Data data, Network *nn, Vector labels){
@@ -70,9 +72,6 @@ int main(void){
     size.arr = arr;
     size.length = 4;
     Network nn = create_network(size);
-    float total = 0.0;
-    printf("loss: %lf\n", loss(training[0],&nn,labels));
-    printVector(nn.neuronLayers[3].neurons);
     free_data(training, 6000);
     free_network(&nn);
 }
