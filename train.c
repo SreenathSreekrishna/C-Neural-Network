@@ -2,7 +2,7 @@
 #include "network.c"
 #include "load_mnist.c"
 #include <time.h>
-#define TRAINING_SPEED 0.01
+#define LEARNING_RATE 0.01
 
 Vector compute(Vector input, Network *nn){
     //Computes output neuron activations given the input neuron activations
@@ -46,9 +46,27 @@ Vector getDiff(Data data, Network *nn, Vector labels){
     return diff;
 }
 
-Vector backProp(Vector nudges, Matrix *wLayer){
-    //returns nudges to weights in proportion to prev layer
-    //todo
+Vector backProp(Data data, Network *nn, Vector labels, int layer){
+    Matrix delta_o = mFromVector(getDiff(data, nn, labels), 1);
+    Matrix hidden = mFromVector(vCopy(nn->neuronLayers[layer-1].neurons), 0);
+    Matrix wUpdateBigger = mDot(hidden, delta_o);
+    Matrix wUpdate = mMultiplyConst(wUpdateBigger, -LEARNING_RATE);
+    Matrix bUpdate = mMultiplyConst(delta_o, -LEARNING_RATE);
+    Matrix wuptranspose = transpose(wUpdate);
+    Matrix dltaUpdt = mDot(wuptranspose, delta_o);
+    Matrix sigRev = mApplyFunc(hidden, ReLuDerivative);
+    Matrix new_delta = mMultiply(dltaUpdt, sigRev);
+    Vector newDelta = vCopy(new_delta.arr[0]);
+    matrix_free(&new_delta);
+    matrix_free(&sigRev);
+    matrix_free(&dltaUpdt);
+    matrix_free(&wuptranspose);
+    matrix_free(&bUpdate);
+    matrix_free(&wUpdate);
+    matrix_free(&wUpdateBigger);
+    matrix_free(&hidden);
+    matrix_free(&delta_o);
+    return newDelta;
 }
 
 float loss(Data data, Network *nn, Vector labels){
@@ -72,6 +90,9 @@ int main(void){
     size.arr = arr;
     size.length = 4;
     Network nn = create_network(size);
+    Vector new_delta = backProp(training[0], &nn, labels, 3);
+    printVector(new_delta);
+    free(new_delta.arr);
     free_data(training, 6000);
     free_network(&nn);
 }

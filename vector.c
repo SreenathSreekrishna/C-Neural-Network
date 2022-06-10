@@ -32,6 +32,14 @@ Vector new_vector_zeroes(int length){
     return vector;
 }
 
+Vector vCopy(Vector v){
+    Vector end = new_vector_zeroes(v.length);
+    for (int i = 0; i<v.length; i++){
+        end.arr[i] = v.arr[i];
+    }
+    return end;
+}
+
 float sum(Vector v){
     float _sum = 0;
     for (int i = 0; i<v.length; i++){
