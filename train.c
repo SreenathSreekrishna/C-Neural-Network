@@ -2,7 +2,7 @@
 #include "network.c"
 #include "load_mnist.c"
 #include <time.h>
-#define LEARNING_RATE 0.01
+#define LEARNING_RATE 0.1
 
 Vector compute(Vector input, Network *nn){
     //Computes output neuron activations given the input neuron activations
@@ -46,31 +46,42 @@ Vector getDiff(Data data, Network *nn, Vector labels){
     return diff;
 }
 
-Vector backProp(Data data, Network *nn, Vector labels, int layer){
-    Matrix delta_o = mFromVector(getDiff(data, nn, labels), 1);
+Vector backProp(Data data, Network *nn, Vector labels, int layer, Vector delta){
+    Matrix delta_o = mFromVector(delta, 1);
     Matrix hidden = mFromVector(vCopy(nn->neuronLayers[layer-1].neurons), 0);
     Matrix wUpdateBigger = mDot(hidden, delta_o);
     Matrix wUpdate = mMultiplyConst(wUpdateBigger, -LEARNING_RATE);
     Matrix bUpdate = mMultiplyConst(delta_o, -LEARNING_RATE);
-    Matrix wuptranspose = transpose(wUpdate);
+    updateWeights(wUpdate, bUpdate, &nn->weightLayers[layer-1], &nn->neuronLayers[layer]);
+    Matrix wuptranspose = transpose(wUpdateBigger);
     Matrix dltaUpdt = mDot(wuptranspose, delta_o);
-    Matrix sigRev = mApplyFunc(hidden, ReLuDerivative);
-    Matrix new_delta = mMultiply(dltaUpdt, sigRev);
+    Matrix relRev = mApplyFunc(hidden, ReLuDerivative);
+    Matrix new_delta = mMultiply(dltaUpdt, relRev);
     Vector newDelta = vCopy(new_delta.arr[0]);
     matrix_free(&new_delta);
-    matrix_free(&sigRev);
+    matrix_free(&relRev);
     matrix_free(&dltaUpdt);
     matrix_free(&wuptranspose);
     matrix_free(&bUpdate);
     matrix_free(&wUpdate);
     matrix_free(&wUpdateBigger);
     matrix_free(&hidden);
-    matrix_free(&delta_o);
+    //matrix_free(&delta_o);
     return newDelta;
+}
+
+void backPropogation(Data data, Vector labels, Network *nn){
+    Vector diff = getDiff(data, nn, labels);
+    Vector delta = backProp(data, nn, labels, nn->size-1, diff);
+    for (int layer = nn->size-2; layer>0 ; layer--){
+        delta = backProp(data, nn, labels, layer, delta);
+        free(delta.arr);
+    }
 }
 
 float loss(Data data, Network *nn, Vector labels){
     Vector diff = getDiff(data, nn, labels);
+    printVector(diff);
     Vector __loss = vSquare(diff);
     float _loss = sum(__loss);
     free(__loss.arr);
@@ -90,9 +101,11 @@ int main(void){
     size.arr = arr;
     size.length = 4;
     Network nn = create_network(size);
-    Vector new_delta = backProp(training[0], &nn, labels, 3);
-    printVector(new_delta);
-    free(new_delta.arr);
+    printf("%lf\n", loss(training[0], &nn, labels));
+    for (int i = 0; i<1000; i++){
+        backPropogation(training[i], labels, &nn);
+    }
+    printf("%lf\n", loss(training[0], &nn, labels));
     free_data(training, 6000);
     free_network(&nn);
 }

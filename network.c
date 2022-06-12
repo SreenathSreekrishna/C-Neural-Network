@@ -47,3 +47,14 @@ void free_network(Network *nn){
     free(nn->weightLayers);
     free(nn->neuronLayers);
 }
+
+void updateWeights(Matrix wUpdate, Matrix bUpdate, WeightLayer *weights, NeuronLayer *neurons){
+    for (int i = 0; i<wUpdate.dims[0]; i++){
+        for (int j = 0; j<wUpdate.dims[1]; j++){
+            weights->weights.arr[i].arr[j] += wUpdate.arr[i].arr[j];
+        }
+    }
+    for (int i = 0; i<bUpdate.dims[1]; i++){
+        neurons->biases.arr[i] += bUpdate.arr[0].arr[i];
+    }
+}

@@ -22,7 +22,7 @@ float ReLuDerivative(float n){
 }
 
 float sig(float n) {
-    return (n / (1 + fabsf(n)));
+    return (1 / (1 + exp(-n)));
 }
 
 float sigDerivative(float n){
