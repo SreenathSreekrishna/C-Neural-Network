@@ -7,7 +7,7 @@
 
 typedef struct Data {
     Vector values;
-    int label;
+    Vector label;
 } Data;
 
 void free_data(Data *data, int size){
@@ -17,7 +17,18 @@ void free_data(Data *data, int size){
     free(data);
 }
 
-Data *load(void){
+Vector process(float label, Vector labels){
+    Vector output = new_vector_zeroes(labels.length);
+    for (int i = 0; i<labels.length; i++){
+        if (labels.arr[i] == label){
+            output.arr[i] = 1;
+            return output;
+        }
+    }
+    return output;
+}
+
+Data *load(Vector _labels){
     FILE *file,*labels;
     file = fopen("mnist/trainimgs", "rb");
     labels = fopen("mnist/trainlabels","rb");
@@ -33,7 +44,7 @@ Data *load(void){
         fread(buffer,size,1,file);
         fread(label,1,1,labels);
         Vector vec = new_vector(size);
-        train_set[_].label = label[0];
+        train_set[_].label = process(label[0], _labels);
         for (int i = 0; i<size; i++){
             vec.arr[i] = (float) buffer[i] / 255.0;
         }

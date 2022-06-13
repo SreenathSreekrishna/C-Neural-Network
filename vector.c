@@ -118,3 +118,53 @@ void printVector(Vector v){
     }
     printf("\n");
 }
+
+float max(Vector v){
+    float _max = -32768.0;
+    for (int i = 0; i<v.length; i++){
+        if (v.arr[i]>_max){
+            _max = v.arr[i];
+        }
+    }
+    return _max;
+}
+
+float min(Vector v){
+    float _min = 32768.0;
+    for (int i = 0; i<v.length; i++){
+        if (v.arr[i]<_min){
+            _min = v.arr[i];
+        }
+    }
+    return _min;
+}
+
+float argMax(Vector v){
+    float _max = -32768.0;
+    int index = 0;
+    for (int i = 0; i<v.length; i++){
+        if (v.arr[i]>_max){
+            _max = v.arr[i];
+            index = i;
+        }
+    }
+    return index;
+}
+
+float argMin(Vector v){
+    float _min = 32768.0;
+    int index = 0;
+    for (int i = 0; i<v.length; i++){
+        if (v.arr[i]<_min){
+            _min = v.arr[i];
+            index = i;
+        }
+    }
+    return index;
+}
+
+void vUpdateSum(Vector *v, Vector vals){
+    for (int i = 0; i<vals.length; i++){
+        v->arr[i] += vals.arr[i];
+    }
+}
