@@ -118,7 +118,7 @@ Vector mSum(Matrix m){
 
 Matrix mDot(Matrix m1, Matrix m2){
     Matrix second = transpose(m2);
-    Matrix multiplication = new_matrix(m1.dims[0],m2.dims[1]);
+    Matrix multiplication = new_matrix_zeros(m1.dims[0],m2.dims[1]);
     for (int i = 0; i<m1.dims[0]; i++){
         for (int j = 0; j<second.dims[0]; j++){
             Vector v = vMultiply(m1.arr[i], second.arr[j]);
@@ -171,7 +171,7 @@ Vector vFromMatrix(Matrix m){
 void updateSum(Matrix *m, Matrix v){
     for (int i = 0; i<v.dims[0]; i++){
         for (int j = 0; j<v.dims[1]; j++){
-            m->arr[i].arr[j] += v.arr[i].arr[j];
+            m->arr[i].arr[j] = m->arr[i].arr[j] + v.arr[i].arr[j];
         }
     }
 }

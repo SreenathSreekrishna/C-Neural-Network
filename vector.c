@@ -165,6 +165,6 @@ float argMin(Vector v){
 
 void vUpdateSum(Vector *v, Vector vals){
     for (int i = 0; i<vals.length; i++){
-        v->arr[i] += vals.arr[i];
+        v->arr[i] = v->arr[i] + vals.arr[i];
     }
 }

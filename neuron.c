@@ -4,7 +4,7 @@
 #include <math.h>
 
 float getRand(){
-    return (((float)(rand() % 1000)/1000.0)*2)-1;
+    return ((float)(rand() % 1000)/1000.0)-0.5;
 }
 
 float ReLu(float n){

@@ -17,6 +17,10 @@ void free_data(Data *data, int size){
     free(data);
 }
 
+float processPixel(float pix){
+    return (pix / 255.0);
+}
+
 Vector process(float label, Vector labels){
     Vector output = new_vector_zeroes(labels.length);
     for (int i = 0; i<labels.length; i++){
@@ -46,7 +50,7 @@ Data *load(Vector _labels){
         Vector vec = new_vector(size);
         train_set[_].label = process(label[0], _labels);
         for (int i = 0; i<size; i++){
-            vec.arr[i] = (float) buffer[i] / 255.0;
+            vec.arr[i] = processPixel(buffer[i]);
         }
         train_set[_].values = vec;
         cursor+=size;

@@ -2,9 +2,9 @@
 #include "network.c"
 #include "load_mnist.c"
 #include <time.h>
-#define LEARNING_RATE 0.0001
-#define EPOCHS 10000
-#define NUM_IMGS 100
+#define LEARNING_RATE 0.01
+#define EPOCHS 50
+#define NUM_IMGS 10000
 
 int main(void){
     srand(time(NULL));
@@ -19,6 +19,7 @@ int main(void){
     Vector b_h_o = new_vector_zeroes(10);
     int correct = 0;
     for (int epoch = 0; epoch<EPOCHS; epoch++){
+        float cost = 0.0;
         for (int trainExample = 0; trainExample<NUM_IMGS; trainExample++){
             Vector img = training[trainExample].values;
             Vector label = training[trainExample].label;
@@ -31,7 +32,7 @@ int main(void){
             Matrix h_pre = mAdd(mbih, weightedSum);
             matrix_free(&mbih);
             matrix_free(&weightedSum);
-            Matrix h = mApplyFunc(h_pre, ReLu);
+            Matrix h = mApplyFunc(h_pre, sig);
             matrix_free(&h_pre);
 
             //hidden ->  output
@@ -49,6 +50,11 @@ int main(void){
             matrix_free(&oM);
 
             //cost
+            Vector diff = vSub(label, o);
+            Vector _cost = vSquare(diff);
+            free(diff.arr);
+            cost += sum(_cost);
+            free(_cost.arr);
             if (argMax(o) == argMax(label)){
                 correct += 1;
             }
@@ -73,7 +79,7 @@ int main(void){
 
             //backprop hidden -> input
             Matrix vht = transpose(w_h_o);
-            Matrix hd = mApplyFunc(h, ReLuDerivative);
+            Matrix hd = mApplyFunc(h, sigDerivative);
             matrix_free(&h);
             Matrix prod = mMultiply(delta_o, hd);
             matrix_free(&delta_o);
@@ -95,7 +101,8 @@ int main(void){
             vUpdateSum(&b_i_h, bNudgesh);
             free(bNudgesh.arr);
         }
-        printf("Accuracy on epoch %d: %d\n", epoch, correct);
+        printf("Accuracy on epoch %d: %lf\n", epoch, (float) correct / (float) NUM_IMGS);
+        printf("Cost on epoch %d: %lf\n\n", epoch, cost/NUM_IMGS);
         correct = 0;
     }
     matrix_free(&w_i_h);
