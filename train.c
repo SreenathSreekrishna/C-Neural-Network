@@ -3,7 +3,7 @@
 #include "load_mnist.c"
 #include <time.h>
 #define LEARNING_RATE 0.01
-#define EPOCHS 50
+#define EPOCHS 1000
 #define NUM_IMGS 10000
 
 int main(void){

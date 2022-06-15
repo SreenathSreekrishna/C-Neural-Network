@@ -4,6 +4,8 @@
 #include "vector.c"
 #endif
 
+//NOTE: ALL FUNCTIONS ENDING WITH F WILL FREE ARGUMENT MATRICES AFTER OPERATION
+
 typedef struct Matrix {
     Vector *arr;
     int dims[2];
@@ -18,6 +20,9 @@ void printMatrix(Matrix mat){
     }
 }
 
+void printDims(Matrix m){
+    printf("%dx%d\n", m.dims[0], m.dims[1]);
+}
 
 void matrix_free(Matrix *matrix){
     for (int i = 0; i<matrix->dims[0] ; i++){
@@ -68,6 +73,19 @@ Matrix mMultiply(Matrix matrixA, Matrix matrixB) {
             product.arr[i].arr[j] = prod;
         }
     }
+    return product;
+}
+
+Matrix mMultiply(Matrix *matrixA, Matrix *matrixB) {
+    Matrix product = new_matrix(matrixA->dims[0], matrixA->dims[1]);
+    for (int i = 0; i<matrixA->dims[0]; i++){
+        for (int j = 0; j<matrixA->dims[1]; j++){
+            float prod = matrixA->arr[i].arr[j] * matrixB->arr[i].arr[j];
+            product->arr[i].arr[j] = prod;
+        }
+    }
+    matrix_free(matrixA);
+    matrix_free(matrixB);
     return product;
 }
 
@@ -150,10 +168,6 @@ Matrix mAdd(Matrix m1, Matrix m2){
     return _sum;
 }
 
-void printDims(Matrix m){
-    printf("%dx%d\n", m.dims[0], m.dims[1]);
-}
-
 Vector vFromMatrix(Matrix m){
     int len = m.dims[0]==1 ? m.dims[1] : m.dims[0];
     Vector v = new_vector_zeroes(len);
@@ -165,6 +179,21 @@ Vector vFromMatrix(Matrix m){
             v.arr[i] = m.arr[i].arr[0];
         }
     }
+    return v;
+}
+
+Vector vFromMatrixF(Matrix *m){
+    int len = m->dims[0]==1 ? m->dims[1] : m->dims[0];
+    Vector v = new_vector_zeroes(len);
+    for (int i = 0; i<len; i++){
+        if (m->dims[0]==1){
+            v.arr[i] = m->arr[0].arr[i];
+        }
+        else {
+            v.arr[i] = m->arr[i].arr[0];
+        }
+    }
+    matrix_free(m);
     return v;
 }
 
