@@ -33,8 +33,17 @@ Vector new_vector_zeroes(int length){
     return vector;
 }
 
+Vector new_vector_null(int length){
+    Vector vector;
+    double *vecarr = malloc((length+1)*sizeof(double));
+    vecarr[length] = 0;
+    vector.arr = vecarr;
+    vector.length = length;
+    return vector;
+}
+
 Vector vCopy(Vector v){
-    Vector end = new_vector_zeroes(v.length);
+    Vector end = new_vector_null(v.length);
     for (int i = 0; i<v.length; i++){
         end.arr[i] = v.arr[i];
     }
@@ -56,7 +65,7 @@ double sumF(Vector *v){
 }
 
 Vector vMultiply(Vector v1, Vector v2){
-    Vector product = new_vector(v1.length);
+    Vector product = new_vector_null(v1.length);
     for (int i = 0; i<v1.length; i++){
         double prod = v1.arr[i] * v2.arr[i];
         product.arr[i] = prod;
@@ -72,7 +81,7 @@ Vector vMultiplyF(Vector *v1, Vector *v2){
 }
 
 Vector vMultiplyConst(Vector v, double n){
-    Vector product = new_vector(v.length);
+    Vector product = new_vector_null(v.length);
     for (int i = 0; i<v.length; i++){
         product.arr[i] = v.arr[i] * n;
     }
@@ -100,7 +109,7 @@ double vDotF(Vector *v1, Vector *v2){
 }
 
 Vector vSub(Vector v1, Vector v2){
-    Vector result = new_vector(v1.length);
+    Vector result = new_vector_null(v1.length);
     for (int i = 0; i<v1.length; i++){
         result.arr[i] = v1.arr[i]-v2.arr[i];
     }
@@ -115,7 +124,7 @@ Vector vSubF(Vector *v1, Vector *v2){
 }
 
 Vector vSubConst(Vector v, double n){
-    Vector result = new_vector(v.length);
+    Vector result = new_vector_null(v.length);
     for (int i = 0; i<v.length; i++){
         result.arr[i] = v.arr[i]-n;
     }
@@ -129,7 +138,7 @@ Vector vSubConstF(Vector *v, double n){
 }
 
 Vector vSquare(Vector v){
-    Vector result = new_vector(v.length);
+    Vector result = new_vector_null(v.length);
     for (int i = 0; i<v.length; i++){
         result.arr[i] = v.arr[i]*v.arr[i];
     }
@@ -143,7 +152,7 @@ Vector vSquareF(Vector *v){
 }
 
 Vector vDivide(Vector v1, Vector v2){
-    Vector division = new_vector(v1.length);
+    Vector division = new_vector_null(v1.length);
     for (int i = 0; i<v1.length; i++){
         division.arr[i] = v1.arr[i] / v2.arr[i];
     }
@@ -158,7 +167,7 @@ Vector vDivideF(Vector *v1, Vector *v2){
 }
 
 Vector vDivideConst(Vector v, double n){
-    Vector division = new_vector(v.length);
+    Vector division = new_vector_null(v.length);
     for (int i = 0; i<v.length; i++){
         division.arr[i] = v.arr[i] / n;
     }

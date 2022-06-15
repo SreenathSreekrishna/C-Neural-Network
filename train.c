@@ -3,6 +3,9 @@
 #include "load_mnist.c"
 #include <time.h>
 #define LEARNING_RATE 0.01
+#define INPUT 784
+#define HIDDEN 20
+#define OUTPUT 10
 #define EPOCHS 3
 #define NUM_IMGS 10000
 
@@ -14,14 +17,17 @@ int main(void){
     labels.length = 10;
     labels.arr = arr;
     Data *training = load(labels);
-    Matrix w_i_h = new_matrix(20,784);
-    Matrix w_h_o = new_matrix(10, 20);
+    Matrix w_i_h = new_matrix(HIDDEN,INPUT);
+    Matrix w_h_o = new_matrix(OUTPUT, HIDDEN);
     Vector b_i_h = new_vector_zeroes(20);
     Vector b_h_o = new_vector_zeroes(10);
     int correct = 0;
     for (int epoch = 0; epoch<EPOCHS; epoch++){
         double cost = 0.0;
         for (int trainExample = 0; trainExample<NUM_IMGS; trainExample++){
+            struct timespec start, end;
+            clock_gettime(CLOCK_REALTIME, &start);
+
             Vector img = training[trainExample].values;
             Vector label = training[trainExample].label;
 
@@ -67,24 +73,23 @@ int main(void){
             Matrix prod = mMultiplyF(&delta_o, &hd);
             Matrix delta_h = mDotF(&vht, &prod);
             Matrix imgT = mFromVector(img, 1);
-            struct timespec start, end;
-            clock_gettime(CLOCK_REALTIME, &start);
-
             Matrix nudgesBigh = mDot(delta_h, imgT);
-
-            clock_gettime(CLOCK_REALTIME, &end);
-            double time_spent = (end.tv_sec - start.tv_sec) +
-                                (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-            total_prop+=time_spent;
             matrix_free(&imgT);
             Matrix nudgesh = mMultiplyConstF(&nudgesBigh, -LEARNING_RATE);
             updateSumF(&w_i_h, &nudgesh);
             Matrix bNudgesMh = mMultiplyConstF(&delta_h, -LEARNING_RATE);
             Vector bNudgesh = vFromMatrixF(&bNudgesMh);
             vUpdateSumF(&b_i_h, &bNudgesh);
+
+            clock_gettime(CLOCK_REALTIME, &end);
+            double time_spent = (end.tv_sec - start.tv_sec) +
+                                (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+            total_prop+=time_spent;
         }
         printf("Accuracy on epoch %d: %f\n", epoch, (double) correct / (double) NUM_IMGS);
-        printf("Cost on epoch %d: %f\n\n", epoch, cost/NUM_IMGS);
+        printf("Cost on epoch %d: %f\n", epoch, cost/NUM_IMGS);
+        printf("Time taken on epoch %d: %f\n\n", epoch, total_prop);
+        total_prop = 0;
         correct = 0;
     }
     matrix_free(&w_i_h);
@@ -92,5 +97,4 @@ int main(void){
     free(b_i_h.arr);
     free(b_h_o.arr);
     free_data(training, 60000);
-    printf("%f\n", total_prop);
 }
