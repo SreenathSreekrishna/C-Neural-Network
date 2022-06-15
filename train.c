@@ -3,12 +3,13 @@
 #include "load_mnist.c"
 #include <time.h>
 #define LEARNING_RATE 0.01
-#define EPOCHS 1000
+#define EPOCHS 3
 #define NUM_IMGS 10000
 
 int main(void){
+    double total_prop = 0.0;
     srand(time(NULL));
-    float arr[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
+    double arr[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
     Vector labels;
     labels.length = 10;
     labels.arr = arr;
@@ -19,42 +20,30 @@ int main(void){
     Vector b_h_o = new_vector_zeroes(10);
     int correct = 0;
     for (int epoch = 0; epoch<EPOCHS; epoch++){
-        float cost = 0.0;
+        double cost = 0.0;
         for (int trainExample = 0; trainExample<NUM_IMGS; trainExample++){
             Vector img = training[trainExample].values;
             Vector label = training[trainExample].label;
 
             //input ->  hidden
             Matrix imgM = mFromVector(img, 0);
-            Matrix weightedSum = mDot(w_i_h, imgM);
-            matrix_free(&imgM);
             Matrix mbih = mFromVector(b_i_h, 0);
-            Matrix h_pre = mAdd(mbih, weightedSum);
-            matrix_free(&mbih);
-            matrix_free(&weightedSum);
-            Matrix h = mApplyFunc(h_pre, sig);
-            matrix_free(&h_pre);
+            Matrix weightedVals = mDot(w_i_h, imgM);
+            Matrix weightedSum  = mAddF(&mbih, &weightedVals);
+            Matrix h = mApplyFuncF(&weightedSum, sig);
+            matrix_free(&imgM);
 
             //hidden ->  output
-            Matrix weightedSumo = mDot(w_h_o, h);
             Matrix mbho = mFromVector(b_h_o, 0);
-            Matrix o_pre = mAdd(mbho, weightedSumo);
-            matrix_free(&mbho);
-            matrix_free(&weightedSumo);
-            Matrix oM = mApplyFunc(o_pre, sig);
-            matrix_free(&o_pre);
-            Vector o = vFromMatrix(oM);
-            //printVector(o);
-            //printVector(label);
-            //printf("\n");
-            matrix_free(&oM);
+            Matrix weightedSumO = mDot(w_h_o, h);
+            Matrix o_pre = mAddF(&mbho, &weightedSumO);
+            Matrix oM = mApplyFuncF(&o_pre, sig);
+            Vector o = vFromMatrixF(&oM);
 
             //cost
             Vector diff = vSub(label, o);
-            Vector _cost = vSquare(diff);
-            free(diff.arr);
-            cost += sum(_cost);
-            free(_cost.arr);
+            Vector _cost = vSquareF(&diff);
+            cost += sumF(&_cost);
             if (argMax(o) == argMax(label)){
                 correct += 1;
             }
@@ -62,47 +51,40 @@ int main(void){
             //backprop output -> hidden
             Vector delta_oV = vSub(o,label);
             free(o.arr);
-            Matrix delta_o = mFromVector(delta_oV, 0);
-            free(delta_oV.arr);
+            Matrix delta_o = mFromVectorF(&delta_oV, 0);
             Matrix ht = transpose(h);
             Matrix nudgesBig = mDot(delta_o, ht);
             matrix_free(&ht);
-            Matrix nudges = mMultiplyConst(nudgesBig, -LEARNING_RATE);
-            matrix_free(&nudgesBig);
-            updateSum(&w_h_o, nudges);
-            matrix_free(&nudges);
+            Matrix nudges = mMultiplyConstF(&nudgesBig, -LEARNING_RATE);
+            updateSumF(&w_h_o, &nudges);
             Matrix bNudgesM = mMultiplyConst(delta_o, -LEARNING_RATE);
-            Vector bNudges = vFromMatrix(bNudgesM);
-            matrix_free(&bNudgesM);
-            vUpdateSum(&b_i_h, bNudges);
-            free(bNudges.arr);
+            Vector bNudges = vFromMatrixF(&bNudgesM);
+            vUpdateSumF(&b_i_h, &bNudges);
 
             //backprop hidden -> input
             Matrix vht = transpose(w_h_o);
-            Matrix hd = mApplyFunc(h, sigDerivative);
-            matrix_free(&h);
-            Matrix prod = mMultiply(delta_o, hd);
-            matrix_free(&delta_o);
-            matrix_free(&hd);
-            Matrix delta_h = mDot(vht, prod);
-            matrix_free(&vht);
-            matrix_free(&prod);
+            Matrix hd = mApplyFuncF(&h, sigDerivative);
+            Matrix prod = mMultiplyF(&delta_o, &hd);
+            Matrix delta_h = mDotF(&vht, &prod);
             Matrix imgT = mFromVector(img, 1);
+            struct timespec start, end;
+            clock_gettime(CLOCK_REALTIME, &start);
+
             Matrix nudgesBigh = mDot(delta_h, imgT);
+
+            clock_gettime(CLOCK_REALTIME, &end);
+            double time_spent = (end.tv_sec - start.tv_sec) +
+                                (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+            total_prop+=time_spent;
             matrix_free(&imgT);
-            Matrix nudgesh = mMultiplyConst(nudgesBigh, -LEARNING_RATE);
-            matrix_free(&nudgesBigh);
-            updateSum(&w_i_h, nudgesh);
-            matrix_free(&nudgesh);
-            Matrix bNudgesMh = mMultiplyConst(delta_h, -LEARNING_RATE);
-            Vector bNudgesh = vFromMatrix(bNudgesMh);
-            matrix_free(&bNudgesMh);
-            matrix_free(&delta_h);
-            vUpdateSum(&b_i_h, bNudgesh);
-            free(bNudgesh.arr);
+            Matrix nudgesh = mMultiplyConstF(&nudgesBigh, -LEARNING_RATE);
+            updateSumF(&w_i_h, &nudgesh);
+            Matrix bNudgesMh = mMultiplyConstF(&delta_h, -LEARNING_RATE);
+            Vector bNudgesh = vFromMatrixF(&bNudgesMh);
+            vUpdateSumF(&b_i_h, &bNudgesh);
         }
-        printf("Accuracy on epoch %d: %lf\n", epoch, (float) correct / (float) NUM_IMGS);
-        printf("Cost on epoch %d: %lf\n\n", epoch, cost/NUM_IMGS);
+        printf("Accuracy on epoch %d: %f\n", epoch, (double) correct / (double) NUM_IMGS);
+        printf("Cost on epoch %d: %f\n\n", epoch, cost/NUM_IMGS);
         correct = 0;
     }
     matrix_free(&w_i_h);
@@ -110,4 +92,5 @@ int main(void){
     free(b_i_h.arr);
     free(b_h_o.arr);
     free_data(training, 60000);
+    printf("%f\n", total_prop);
 }

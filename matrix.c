@@ -69,21 +69,15 @@ Matrix mMultiply(Matrix matrixA, Matrix matrixB) {
     Matrix product = new_matrix(matrixA.dims[0], matrixA.dims[1]);
     for (int i = 0; i<matrixA.dims[0]; i++){
         for (int j = 0; j<matrixA.dims[1]; j++){
-            float prod = matrixA.arr[i].arr[j] * matrixB.arr[i].arr[j];
+            double prod = matrixA.arr[i].arr[j] * matrixB.arr[i].arr[j];
             product.arr[i].arr[j] = prod;
         }
     }
     return product;
 }
 
-Matrix mMultiply(Matrix *matrixA, Matrix *matrixB) {
-    Matrix product = new_matrix(matrixA->dims[0], matrixA->dims[1]);
-    for (int i = 0; i<matrixA->dims[0]; i++){
-        for (int j = 0; j<matrixA->dims[1]; j++){
-            float prod = matrixA->arr[i].arr[j] * matrixB->arr[i].arr[j];
-            product->arr[i].arr[j] = prod;
-        }
-    }
+Matrix mMultiplyF(Matrix *matrixA, Matrix *matrixB) {
+    Matrix product = mMultiply(*matrixA, *matrixB);
     matrix_free(matrixA);
     matrix_free(matrixB);
     return product;
@@ -104,13 +98,33 @@ Matrix mFromVector(Vector v, int orientation){
     return m;
 }
 
-Matrix mMultiplyConst(Matrix m, float n){
+Matrix mFromVectorF(Vector *v, int orientation){
+    Matrix m = mFromVector(*v, orientation);
+    free(v->arr);
+    return m;
+}
+
+Vector vMultiplyO(Matrix v1, Matrix v2, int _i, int j){
+    Vector prod = new_vector_zeroes(v1.dims[0]);
+    for (int i = 0; i<v1.dims[0]; i++){
+        prod.arr[i] = v1.arr[i].arr[_i] * v2.arr[j].arr[i];
+    }
+    return prod;
+}
+
+Matrix mMultiplyConst(Matrix m, double n){
     Matrix multiplication = new_matrix(m.dims[0],m.dims[1]);
     for (int i = 0; i<m.dims[0]; i++){
         for (int j = 0; j<m.dims[1]; j++){
             multiplication.arr[i].arr[j] = m.arr[i].arr[j] * n;
         }
     }
+    return multiplication;
+}
+
+Matrix mMultiplyConstF(Matrix *m, double n){
+    Matrix multiplication = mMultiplyConst(*m, n);
+    matrix_free(m);
     return multiplication;
 }
 
@@ -124,6 +138,12 @@ Matrix transpose(Matrix m){
     return transposed;
 }
 
+Matrix transposeF(Matrix *m){
+    Matrix transposed = transpose(*m);
+    matrix_free(m);
+    return transposed;
+}
+
 Vector mSum(Matrix m){
     Matrix flipped = transpose(m);
     Vector _sum = new_vector(m.dims[0]);
@@ -134,27 +154,44 @@ Vector mSum(Matrix m){
     return _sum;
 }
 
+Vector mSumF(Matrix *m){
+    Vector _sum = mSum(*m);
+    matrix_free(m);
+    return _sum;
+}
+
 Matrix mDot(Matrix m1, Matrix m2){
-    Matrix second = transpose(m2);
     Matrix multiplication = new_matrix_zeros(m1.dims[0],m2.dims[1]);
     for (int i = 0; i<m1.dims[0]; i++){
-        for (int j = 0; j<second.dims[0]; j++){
-            Vector v = vMultiply(m1.arr[i], second.arr[j]);
+        for (int j = 0; j<m2.dims[1]; j++){
+            Vector v = vMultiplyO(m2, m1, j, i);
             multiplication.arr[i].arr[j] = sum(v);
             free(v.arr);
         }
     }
-    matrix_free(&second);
     return multiplication;
 }
 
-Matrix mApplyFunc(Matrix m, float (*f)(float)){
+Matrix mDotF(Matrix *m1, Matrix *m2){
+    Matrix multiplication = mDot(*m1, *m2);
+    matrix_free(m1);
+    matrix_free(m2);
+    return multiplication;
+}
+
+Matrix mApplyFunc(Matrix m, double (*f)(double)){
     Matrix end = new_matrix(m.dims[0], m.dims[1]);
     for (int i = 0; i<m.dims[0]; i++){
         for (int j = 0; j<m.dims[1]; j++){
             end.arr[i].arr[j] = (*f)(m.arr[i].arr[j]);
         }
     }
+    return end;
+}
+
+Matrix mApplyFuncF(Matrix *m, double (*f)(double)){
+    Matrix end = mApplyFunc(*m, f);
+    matrix_free(m);
     return end;
 }
 
@@ -165,6 +202,13 @@ Matrix mAdd(Matrix m1, Matrix m2){
             _sum.arr[i].arr[j] = m1.arr[i].arr[j] + m2.arr[i].arr[j];
         }
     }
+    return _sum;
+}
+
+Matrix mAddF(Matrix *m1, Matrix *m2){
+    Matrix _sum = mAdd(*m1, *m2);
+    matrix_free(m1);
+    matrix_free(m2);
     return _sum;
 }
 
@@ -183,16 +227,7 @@ Vector vFromMatrix(Matrix m){
 }
 
 Vector vFromMatrixF(Matrix *m){
-    int len = m->dims[0]==1 ? m->dims[1] : m->dims[0];
-    Vector v = new_vector_zeroes(len);
-    for (int i = 0; i<len; i++){
-        if (m->dims[0]==1){
-            v.arr[i] = m->arr[0].arr[i];
-        }
-        else {
-            v.arr[i] = m->arr[i].arr[0];
-        }
-    }
+    Vector v = vFromMatrix(*m);
     matrix_free(m);
     return v;
 }
@@ -203,4 +238,9 @@ void updateSum(Matrix *m, Matrix v){
             m->arr[i].arr[j] = m->arr[i].arr[j] + v.arr[i].arr[j];
         }
     }
+}
+
+void updateSumF(Matrix *m, Matrix *v){
+    updateSum(m, *v);
+    matrix_free(v);
 }

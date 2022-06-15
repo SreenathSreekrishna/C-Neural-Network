@@ -17,11 +17,11 @@ void free_data(Data *data, int size){
     free(data);
 }
 
-float processPixel(float pix){
+double processPixel(double pix){
     return (pix / 255.0);
 }
 
-Vector process(float label, Vector labels){
+Vector process(double label, Vector labels){
     Vector output = new_vector_zeroes(labels.length);
     for (int i = 0; i<labels.length; i++){
         if (labels.arr[i] == label){

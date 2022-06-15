@@ -3,28 +3,28 @@
 #include <time.h>
 #include <math.h>
 
-float getRand(){
-    return ((float)(rand() % 1000)/1000.0)-0.5;
+double getRand(){
+    return ((double)(rand() % 1000)/1000.0)-0.5;
 }
 
-float ReLu(float n){
+double ReLu(double n){
     if (n<0){
         return 0.0;
     }
     return n;
 }
 
-float ReLuDerivative(float n){
+double ReLuDerivative(double n){
     if (n<0){
         return 0;
     }
     return 1;
 }
 
-float sig(float n) {
+double sig(double n) {
     return (1 / (1 + exp(-n)));
 }
 
-float sigDerivative(float n){
+double sigDerivative(double n){
     return (n * (1 - n));
 }
