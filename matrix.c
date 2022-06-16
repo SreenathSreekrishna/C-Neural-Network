@@ -225,6 +225,22 @@ Matrix mAddF(Matrix *m1, Matrix *m2){
     return _sum;
 }
 
+Matrix mDivideConst(Matrix m, double n){
+    Matrix division = new_matrix_null(m.dims[0], m.dims[1]);
+    for (int i = 0; i<m.dims[0]; i++){
+        Vector divided = vDivideConst(m.arr[i], n);
+        free(division.arr[i].arr);
+        division.arr[i] = divided;
+    }
+    return division;
+}
+
+Matrix mDivideConstF(Matrix *m, double n){
+    Matrix division = mDivideConst(*m, n);
+    matrix_free(m);
+    return division;
+}
+
 Vector vFromMatrix(Matrix m){
     int len = m.dims[0]==1 ? m.dims[1] : m.dims[0];
     Vector v = new_vector_null(len);
