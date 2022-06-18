@@ -2,13 +2,14 @@
 #include "network.c"
 #include "load_mnist.c"
 #include <time.h>
-#define LEARNING_RATE 0.01
-#define INPUT 784
+#define LEARNING_RATE 0.1
+#define INPUT 16
 #define HIDDEN 20
 #define OUTPUT 10
-#define EPOCHS 10
-#define NUM_IMGS 10000
-#define BATCH_SIZE 10000
+#define EPOCHS 10000
+#define NUM_IMGS 1000
+#define BATCH_SIZE 100
+#define _time 0
 
 int main(void){
     double total_prop = 0.0;
@@ -34,7 +35,9 @@ int main(void){
             for (int img = 0; img<BATCH_SIZE; img++){
                 int trainExample = batch*BATCH_SIZE+img;
                 struct timespec start, end;
-                clock_gettime(CLOCK_REALTIME, &start);
+                if (_time){
+                    clock_gettime(CLOCK_REALTIME, &start);
+                }
 
                 Vector img = training[trainExample].values;
                 Vector label = training[trainExample].label;
@@ -78,8 +81,8 @@ int main(void){
                 //backprop hidden -> input
                 Matrix vht = transpose(w_h_o);
                 Matrix hd = mApplyFuncF(&h, sigDerivative);
-                Matrix prod = mMultiplyF(&delta_o, &hd);
-                Matrix delta_h = mDotF(&vht, &prod);
+                Matrix prod = mDotF(&vht, &delta_o);
+                Matrix delta_h = mMultiplyF(&prod, &hd);
                 Matrix imgT = mFromVector(img, 1);
                 Matrix nudgesBigh = mDot(delta_h, imgT);
                 matrix_free(&imgT);
@@ -89,10 +92,12 @@ int main(void){
                 Vector bNudgesh = vFromMatrixF(&bNudgesMh);
                 vUpdateSumF(&gradient_b_i_h, &bNudgesh);
 
-                clock_gettime(CLOCK_REALTIME, &end);
-                double time_spent = (end.tv_sec - start.tv_sec) +
-                                    (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-                total_prop+=time_spent;
+                if(_time){
+                    clock_gettime(CLOCK_REALTIME, &end);
+                    double time_spent = (end.tv_sec - start.tv_sec) +
+                                        (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+                    total_prop+=time_spent;
+                }
             }
             Matrix wihavg = mDivideConstF(&gradient_w_i_h, num_batches);
             Matrix whoavg = mDivideConstF(&gradient_w_h_o, num_batches);
@@ -105,8 +110,11 @@ int main(void){
         }
         printf("Accuracy on epoch %d: %f\n", epoch, (double) correct / (double) NUM_IMGS);
         printf("Cost on epoch %d: %f\n", epoch, cost/NUM_IMGS);
-        printf("Time taken on epoch %d: %f\n\n", epoch, total_prop);
-        total_prop = 0;
+        if (_time){
+            printf("Time taken on epoch %d: %f\n", epoch, total_prop);
+            total_prop = 0;
+        }
+        printf("\n");
         correct = 0;
     }
     matrix_free(&w_i_h);

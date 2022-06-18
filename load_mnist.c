@@ -4,6 +4,7 @@
 #define __matrix__
 #include "matrix.c"
 #endif
+#define COMPRESS_SIZE 7
 
 typedef struct Data {
     Vector values;
@@ -18,7 +19,22 @@ void free_data(Data *data, int size){
 }
 
 double processPixel(double pix){
-    return (pix / 255.0);
+    return (pix / 255.0) - 0.5;
+}
+
+Vector compressImg(Vector img, int n){
+    int len = n*n;
+    int end_length = img.length/len;
+    Vector compressed = new_vector_null(end_length);
+    for (int i = 0; i<end_length; i++){
+        double _sum = 0.0;
+        for (int j = 0; j<len; j++){
+            _sum += img.arr[i*len+j];
+        }
+        compressed.arr[i] = _sum / len;
+    }
+    free(img.arr);
+    return compressed;
 }
 
 Vector process(double label, Vector labels){
@@ -52,7 +68,7 @@ Data *load(Vector _labels){
         for (int i = 0; i<size; i++){
             vec.arr[i] = processPixel(buffer[i]);
         }
-        train_set[_].values = vec;
+        train_set[_].values = compressImg(vec, COMPRESS_SIZE);
         cursor+=size;
     }
     fclose(file);
